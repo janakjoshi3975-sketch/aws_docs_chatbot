@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+
 import streamlit as st
 
 from agent import (
@@ -26,12 +27,33 @@ from agent import (
 
 
 # ------------------------------------------------------------ page setup
+from dotenv import load_dotenv
+load_dotenv()
+
+#password gateway
+def check_password():
+    if "auth" not in st.session_state:
+        st.session_state.auth = False
+    if st.session_state.auth:
+        return True
+    pw = st.text_input("Access password", type="password")
+    if pw and pw == os.environ.get("APP_PASSWORD"):
+        st.session_state.auth = True
+        st.rerun()
+    elif pw:
+        st.error("Incorrect password")
+    return False
+
+if not check_password():
+    st.stop()
+
 
 st.set_page_config(
     page_title="AWS Docs Agent",
     page_icon="📚",
     layout="centered",
 )
+
 
 st.markdown(
     """

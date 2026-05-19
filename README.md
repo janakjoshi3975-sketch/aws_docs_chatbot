@@ -79,47 +79,6 @@ client tools explicitly. Both are domain-restricted to `docs.aws.amazon.com`.
 
 ---
 
-## Extending it
-
-### Add your own tool
-
-In `agent.py`, append a spec to `CLIENT_TOOLS` and a handler:
-
-```python
-CLIENT_TOOLS.append({
-    "name": "list_my_s3_buckets",
-    "description": "List S3 buckets in the user's AWS account.",
-    "input_schema": {"type": "object", "properties": {}},
-})
-
-def _list_my_s3_buckets() -> str:
-    import boto3
-    s3 = boto3.client("s3")
-    return "\n".join(b["Name"] for b in s3.list_buckets()["Buckets"])
-
-CLIENT_TOOL_HANDLERS["list_my_s3_buckets"] = _list_my_s3_buckets
-```
-
-Now the agent can call into your AWS account when relevant. This is where
-the data-science angle gets fun: you could expose a tool that queries Athena,
-runs a Sagemaker job, or reads a parquet file — and let the agent compose
-those with AWS docs lookups in plain English.
-
-### Swap the search backend
-
-Replace the `web_search`/`web_fetch` server tools with a custom client tool
-that hits your own vector store of AWS docs (or Confluence, or internal
-runbooks). The agent loop doesn't change.
-
-### Stream tokens instead of buffering
-
-Switch `client.messages.create(...)` to `client.messages.stream(...)` and
-yield text as deltas arrive. Tool blocks still need to be assembled before
-you can run them, so the loop structure is the same — only the inner
-text-collection changes.
-
----
-
 ## Things to ask it
 
 - _Compare Aurora Serverless v2 and DynamoDB on-demand for a write-heavy workload._
